@@ -54,12 +54,96 @@ const getOverallEvaluation = (verdictCounts) => {
   return topVerdicts.length === 1 ? topVerdicts[0] : `Tie between ${topVerdicts.join(' and ')}`;
 };
 
+function Chat({ apiKey, personality, initialStory, onClose }) {
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: `Hi, I'm ${personality.name}. Let's discuss the situation you described.` }
+  ]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const sendMessage = async () => {
+    if (!newMessage.trim()) return;
+    
+    setLoading(true);
+    const updatedMessages = [...messages, { role: 'user', content: newMessage }];
+    setMessages(updatedMessages);
+    setNewMessage('');
+
+    try {
+      const response = await axios.post(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          model: 'gpt-3.5-turbo',
+          messages: [
+            { 
+              role: 'system', 
+              content: `You are ${personality.name}. ${personality.instruction} Focus on the situation and provide thoughtful insights. Ask follow up questions if you can't fully agree with the user's points. Otherwise, try to maintain your position. Be conversational, yet brief in your responses.` 
+            },
+            { 
+              role: 'user', 
+              content: `Here's the situation: ${initialStory}` 
+            },
+            ...updatedMessages.slice(1)
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setMessages([...updatedMessages, {
+        role: 'assistant',
+        content: response.data.choices[0].message.content.trim()
+      }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="chat-overlay">
+      <div className="chat-container">
+        <div className="chat-header">
+          <h3>{personality.name}</h3>
+          <button onClick={onClose}>Close</button>
+        </div>
+        <div className="chat-messages">
+          {messages.map((message, index) => (
+            <div key={index} className={`message ${message.role}`}>
+              {message.content}
+            </div>
+          ))}
+          {loading && <div className="message loading">Typing...</div>}
+        </div>
+        <div className="chat-input">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Type your message..."
+            disabled={loading}
+          />
+          <button onClick={sendMessage} disabled={loading}>
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [apiKey, setApiKey] = useState('');
   const [story, setStory] = useState('');
   const [judgments, setJudgments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeChat, setActiveChat] = useState(null);
 
   const handleSubmit = async () => {
     if (!apiKey || !story) {
@@ -186,9 +270,27 @@ function App() {
                 <span className="verdict-text">Verdict: {judgment.verdict}</span>
               </p>
               <p>{judgment.response}</p>
+              <button 
+                onClick={() => setActiveChat({
+                  personality: personalities.find(p => p.name === judgment.personality),
+                  story
+                })}
+                className="chat-button"
+              >
+                Chat with {judgment.personality}
+              </button>
             </div>
           ))}
         </div>
+      )}
+
+      {activeChat && (
+        <Chat
+          apiKey={apiKey}
+          personality={activeChat.personality}
+          initialStory={activeChat.story}
+          onClose={() => setActiveChat(null)}
+        />
       )}
     </div>
   );
