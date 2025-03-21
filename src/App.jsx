@@ -1,140 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { personalities } from './data/personalities';
+import { getJudgment } from './services/openai';
+import { extractVerdict } from './utils/verdictHelpers';
+import { ApiKeyInput } from './components/ApiKeyInput';
+import { StoryInput } from './components/StoryInput';
+import { JudgmentList } from './components/JudgmentList';
 import './App.css';
-
-const personalities = [
-  { name: 'Emma Thompson (The Empath)', instruction: 'Consider both sides with compassion.' },
-  { name: 'Marcus Reed (The Cynic)', instruction: 'Look for hidden motives and flaws in their reasoning.' },
-  { name: 'Victoria Chen (The Rule Follower)', instruction: 'Judge strictly based on social norms and rules.' },
-  { name: 'Jack Murphy (The Jokester)', instruction: 'Add humor to your judgment.' },
-  { name: 'Sarah Parker (The Realist)', instruction: 'Provide a straightforward, no-nonsense opinion.' },
-  { name: 'David Kim (The Diplomat)', instruction: 'Seek middle ground and compromise.' },
-  { name: 'Lucy Martinez (The Sarcastic One)', instruction: 'Use sarcasm and wit in your response.' },
-  { name: 'Benjamin Wright (The Optimist)', instruction: 'Focus on the positive and give the benefit of the doubt.' },
-  { name: 'Rachel Black (The Pessimist)', instruction: 'Highlight the negative and assume the worst.' },
-  { name: 'Michael Cohen (The Therapist)', instruction: 'Analyze psychological aspects and suggest growth.' },
-  { name: 'Alexandra Rivera (The Lawyer)', instruction: 'Judge based on legal or ethical principles.' },
-  { name: 'James Wilson (The Friend)', instruction: 'Offer advice as a close friend would.' },
-  { name: 'Nina Patel (The Stranger)', instruction: 'Provide an outsider\'s perspective.' },
-  { name: 'Thomas Greene (The Moralist)', instruction: 'Judge based on strict moral codes.' },
-  { name: 'Lisa Anderson (The Pragmatist)', instruction: 'Focus on practical outcomes.' },
-  { name: 'Oliver Chang (The Idealist)', instruction: 'Judge based on ideals, regardless of practicality.' },
-  { name: 'Diana Ross (The Devil\'s Advocate)', instruction: 'Challenge the user by taking the opposing view.' },
-  { name: 'Samuel Lee (The Mediator)', instruction: 'Try to understand all sides and find resolution.' },
-  { name: 'Grace Williams (The Critic)', instruction: 'Point out flaws and areas for improvement.' },
-  { name: 'Robert Foster (The Supporter)', instruction: 'Side with the user and offer encouragement.' },
-];
-
-// Extract verdict from AI response (unchanged)
-const extractVerdict = (response) => {
-  const regex = /^Verdict:\s*(YTA|NTA|ESH|NAH)/i;
-  const match = response.match(regex);
-  if (match) return match[1].toUpperCase();
-
-  const keywords = {
-    YTA: /YTA|You're the Asshole/i,
-    NTA: /NTA|Not the Asshole/i,
-    ESH: /ESH|Everyone Sucks Here/i,
-    NAH: /NAH|No Assholes Here/i,
-  };
-  for (const [verdict, pattern] of Object.entries(keywords)) {
-    if (pattern.test(response)) return verdict;
-  }
-  return 'Undecided';
-};
-
-// Determine overall evaluation (unchanged)
-const getOverallEvaluation = (verdictCounts) => {
-  const definedVerdicts = ['YTA', 'NTA', 'ESH', 'NAH'];
-  const counts = definedVerdicts.map((v) => verdictCounts[v] || 0);
-  const maxCount = Math.max(...counts);
-  if (maxCount === 0) return 'Undecided';
-
-  const topVerdicts = definedVerdicts.filter((v) => (verdictCounts[v] || 0) === maxCount);
-  return topVerdicts.length === 1 ? topVerdicts[0] : `Tie between ${topVerdicts.join(' and ')}`;
-};
-
-function Chat({ apiKey, personality, initialStory, response, onClose }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: `${response.replace(/^Verdict:\s*(YTA|NTA|ESH|NAH)[\s:]*/i, '')}` }  ]);
-  const [newMessage, setNewMessage] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-    
-    setLoading(true);
-    const updatedMessages = [...messages, { role: 'user', content: newMessage }];
-    setMessages(updatedMessages);
-    setNewMessage('');
-
-    try {
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { 
-              role: 'system', 
-              content: `You are ${personality.name}. ${personality.instruction} Focus on the situation and provide thoughtful insights. Ask follow up questions if you can't fully agree with the user's points. Otherwise, try to maintain your position. Be conversational, yet brief in your responses.` 
-            },
-            { 
-              role: 'user', 
-              content: `Here's the situation: ${initialStory}` 
-            },
-            ...updatedMessages.slice(1)
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      setMessages([...updatedMessages, {
-        role: 'assistant',
-        content: response.data.choices[0].message.content.trim()
-      }]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-    }
-    setLoading(false);
-  };
-
-  return (
-    <div className="chat-overlay">
-      <div className="chat-container">
-        <div className="chat-header">
-          <h3>{personality.name}</h3>
-          <button onClick={onClose}>Close</button>
-        </div>
-        <div className="chat-messages">
-          {messages.map((message, index) => (
-            <div key={index} className={`message ${message.role}`}>
-              {message.content}
-            </div>
-          ))}
-          {loading && <div className="message loading">Typing...</div>}
-        </div>
-        <div className="chat-input">
-          <input
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Type your message..."
-            disabled={loading}
-          />
-          <button onClick={sendMessage} disabled={loading}>
-            Send
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 function App() {
   const [apiKey, setApiKey] = useState('');
@@ -143,8 +14,10 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeChat, setActiveChat] = useState(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showGenerate, setShowGenerate] = useState(false);
 
-  // Load API key from localStorage
+  // Load API key from localStorage or environment
   useEffect(() => {
     const storedApiKey = localStorage.getItem('apiKey');
     if (import.meta.env.VITE_OPENAI_API_KEY) {
@@ -164,145 +37,103 @@ function App() {
     setJudgments([]);
 
     try {
-      const promises = personalities.map((personality) => {
-        const prompt = `
-          Read the following story and provide a judgment on whether the person is the asshole. 
-          Start your response with "Verdict: [YTA/NTA/ESH/NAH]" followed by your reasoning. 
-          ${personality.instruction}
-          
-          Story: ${story}
-        `;
-        return axios.post(
-          'https://api.openai.com/v1/chat/completions',
-          {
-            model: 'gpt-3.5-turbo',
-            messages: [{ role: 'user', content: prompt }],
-            max_tokens: 150,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${apiKey}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-      });
-
-      const responses = await Promise.all(promises);
-      const newJudgments = responses.map((res, index) => {
-        const response = res.data.choices[0].message.content.trim();
+      const promises = personalities.map(async (personality) => {
+        const response = await getJudgment(apiKey, story, personality);
         const verdict = extractVerdict(response);
         return {
-          personality: personalities[index].name,
+          personality: personality.name,
           response,
           verdict,
         };
       });
+
+      const newJudgments = await Promise.all(promises);
       setJudgments(newJudgments);
-    } catch (err) {
-      setError('Error fetching judgments. Check your API key or network connection.');
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.error('Error getting judgments:', error);
+      setError('Failed to get judgments. Please check your API key and try again.');
     }
+    setLoading(false);
   };
 
-  const verdictCounts = judgments.reduce((acc, j) => {
-    acc[j.verdict] = (acc[j.verdict] || 0) + 1;
-    return acc;
-  }, {});
-  const overallEvaluation = judgments.length > 0 ? getOverallEvaluation(verdictCounts) : '';
-  const verdictOrder = ['YTA', 'NTA', 'ESH', 'NAH', 'Undecided'];
-  const totalJudgments = judgments.length;
-  const breakdown = verdictOrder.map((verdict) => ({
-    verdict,
-    count: verdictCounts[verdict] || 0,
-    percentage: totalJudgments ? ((verdictCounts[verdict] || 0) / totalJudgments) * 100 : 0,
-  }));
+  const handleChatClick = (judgment) => {
+    const personality = personalities.find(p => p.name === judgment.personality);
+    
+    // Toggle chat off if clicking the same judgment
+    if (activeChat?.personality?.name === personality.name) {
+      setActiveChat(null);
+      return;
+    }
+
+    setActiveChat({ 
+      personality, 
+      response: judgment.response, 
+      initialStory: story 
+    });
+  };
+
+  const handleHomeClick = () => {
+    setShowSettings(false);
+    setShowGenerate(false);
+  };
 
   return (
-    <div className="app-container">
-      <h1>AITA Evaluator</h1>
+    <div className="app">
+      <header>
+        <div className="header-content">
+          <h1 onClick={handleHomeClick} className="clickable-title">Am I The Asshole?</h1>
+          <nav className="app-nav">
 
-      <div>
-        <label>
-          OpenAI API Key:
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-          />
-        </label>
-      </div>
-
-      <div>
-        <label>
-          Your Story:
-          <textarea
-            value={story}
-            onChange={(e) => setStory(e.target.value)}
-            placeholder="Tell us what happened..."
-          />
-        </label>
-      </div>
-
-      <p className="api-note">
-        Note: Evaluating your story will make 20 API calls, one for each personality. Ensure you have sufficient API credits.
-      </p>
-
-      <button onClick={handleSubmit} disabled={loading}>
-        {loading ? 'Evaluating...' : 'Evaluate'}
-      </button>
-
-      {error && <p className="error">{error}</p>}
-
-      {judgments.length > 0 && (
-        <div className="results">
-          <div className="verdict-breakdown">
-            <h2>Overall Evaluation: {overallEvaluation}</h2>
-            <h3>Verdict Breakdown</h3>
-            {breakdown.map((item) => (
-              <div key={item.verdict} className="verdict-bar">
-                <span className="verdict-label">{item.verdict}</span>
-                <div
-                  className={`verdict-bar-fill ${item.verdict}`}
-                  style={{ width: `${item.percentage}%` }}
-                  data-count={item.count}
-                ></div>
-              </div>
-            ))}
-          </div>
-
-          {judgments.map((judgment, index) => (
-            <div key={index} className="judgment-card">
-              <h3>{judgment.personality}</h3>
-              <p>
-                <span className="verdict-text">Verdict: {judgment.verdict}</span>
-              </p>
-              <p>{judgment.response}</p>
-              <button 
-                onClick={() => setActiveChat({
-                  personality: personalities.find(p => p.name === judgment.personality),
-                  response: judgment.response,
-                  story
-                })}
-                className="chat-button"
-              >
-                Chat with {judgment.personality}
-              </button>
-            </div>
-          ))}
+            <button 
+              className={`nav-link icon-button ${showSettings ? 'active' : ''}`}
+              onClick={() => {
+                setShowSettings(!showSettings);
+                setShowGenerate(false);
+              }}
+              aria-label="Settings"
+            >
+              ⚙️
+            </button>
+          </nav>
         </div>
-      )}
+      </header>
 
-      {activeChat && (
-        <Chat
-          apiKey={apiKey}
-          personality={activeChat.personality}
-          initialStory={activeChat.story}
-          response={activeChat.response}
-          onClose={() => setActiveChat(null)}
-        />
-      )}
+      <main>
+        {showSettings ? (
+          <ApiKeyInput apiKey={apiKey} setApiKey={setApiKey} />
+        ) : showGenerate ? (
+          <StoryInput
+            story={story}
+            setStory={setStory}
+            onSubmit={() => {
+              setShowGenerate(false);
+              handleSubmit();
+            }}
+            loading={loading}
+            apiKey={apiKey}
+          />
+        ) : (
+          <>
+            <div className="story-section">
+              <StoryInput
+                story={story}
+                setStory={setStory}
+                onSubmit={handleSubmit}
+                loading={loading}
+                apiKey={apiKey}
+              />
+              {error && <div className="error">{error}</div>}
+            </div>
+
+            <JudgmentList
+              judgments={judgments}
+              onChatClick={handleChatClick}
+              activeChat={activeChat}
+              apiKey={apiKey}
+            />
+          </>
+        )}
+      </main>
     </div>
   );
 }

@@ -1,0 +1,109 @@
+.judgment-card {
+  background-color: #1a1a1b;
+  border: 1px solid #343536;
+  border-radius: 4px;
+  padding: 16px;
+  margin-bottom: 2px;
+  color: #d7dadc;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.judgment-card.with-chat {
+  border-color: #4a4a4b;
+}
+
+.judgment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  color: #d7dadc;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.judgment-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.personality {
+  font-weight: 500;
+  color: #d7dadc;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.personality::after {
+  content: '•';
+  color: #818384;
+}
+
+.verdict {
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.verdict.yta { background: #ffebee; color: #c62828; }
+.verdict.nta { background: #e8f5e9; color: #2e7d32; }
+.verdict.esh { background: #fff3e0; color: #ef6c00; }
+.verdict.nah { background: #e3f2fd; color: #1565c0; }
+.verdict.undecided { background: #f5f5f5; color: #616161; }
+
+.response {
+  margin: 0;
+  margin-bottom: 16px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-size: 14px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  color: #d7dadc;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #343536;
+}
+
+.chat-button {
+  background-color: transparent;
+  border: 1px solid #343536;
+  color: #818384;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  transition: all 0.2s ease;
+  margin-top: auto;
+}
+
+.chat-button:hover {
+  background-color: #272729;
+  border-color: #4a4a4b;
+  color: #d7dadc;
+}
+
+.chat-button.active {
+  background-color: #272729;
+  border-color: #4a4a4b;
+  color: #d7dadc;
+}
+
+.chat-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #343536;
+}

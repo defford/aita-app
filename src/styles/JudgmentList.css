@@ -1,0 +1,49 @@
+.judgments-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 16px;
+  background-color: #1a1a1b;
+}
+
+.overall-verdict {
+  background-color: #1a1a1b;
+  border: 1px solid #343536;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.overall-verdict h2 {
+  margin: 0 0 12px 0;
+  color: #d7dadc;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.verdict-counts {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.verdict-count {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+.verdict-count.yta { background: #ff4500; color: #ffffff; }
+.verdict-count.nta { background: #46d160; color: #ffffff; }
+.verdict-count.esh { background: #ffd635; color: #000000; }
+.verdict-count.nah { background: #0079d3; color: #ffffff; }
+
+.judgments-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}

@@ -1,0 +1,130 @@
+.story-input {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  width: 100%;
+}
+
+.textarea-container {
+  position: relative;
+  width: 100%;
+}
+
+.story-input textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 1rem;
+  background: #1a1a1b;
+  color: #d7dadc;
+  border: 1px solid #343536;
+  border-radius: 4px 4px 0 0;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.story-input textarea:focus {
+  outline: none;
+  border-color: #818384;
+}
+
+.story-input textarea::placeholder {
+  color: #818384;
+}
+
+.generate-tab {
+  position: absolute;
+  bottom: -24px;
+  right: 20px;
+  padding: 8px 20px;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  background: #3b3b3c;
+  color: #d7dadc;
+  border: 1px solid #343536;
+  border-bottom: none;
+  border-radius: 0 0 8px 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: -3px -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.generate-tab:hover {
+  background: #2d2d2e;
+}
+
+.generate-tab.active {
+  background: #1a1a1b;
+  border-color: #343536;
+  z-index: 1;
+}
+
+.generate-tab.active:hover {
+  background: #1a1a1b;
+}
+
+.generator-panel {
+  padding: 0.5rem;
+  background: #1a1a1b;
+  margin-top: -1px;
+  border: 1px solid #343536;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.judge-button {
+  padding: 8px 16px;
+  margin-top: 1rem;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  color: #d7dadc;
+  border: 1px solid #343536;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.judge-button:hover:not(:disabled) {
+  background-color: #272729;
+}
+
+.judge-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media screen and (max-width: 768px) {
+  .story-input textarea {
+    font-size: 16px; /* Better for mobile readability */
+    padding: 12px;
+  }
+  
+  .generate-tab {
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .story-input {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .story-input textarea {
+    min-height: 160px;
+  }
+}
