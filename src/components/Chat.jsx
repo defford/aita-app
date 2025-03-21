@@ -3,9 +3,7 @@ import { createChatCompletion } from '../services/openai';
 import '../styles/Chat.css';
 
 export function Chat({ apiKey, personality, initialStory, response }) {
-  const [messages, setMessages] = useState([
-    { role: 'assistant', content: `${response.replace(/^Verdict:\s*(YTA|NTA|ESH|NAH)[\s:]*/i, '')}` }
-  ]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,7 +14,7 @@ export function Chat({ apiKey, personality, initialStory, response }) {
     try {
       const systemMessage = {
         role: 'system',
-        content: `You are ${personality.name}. ${personality.instruction} Focus on the situation and provide thoughtful insights. Ask follow up questions if you can't fully agree with the user's points. Otherwise, try to maintain your position. Be conversational, yet brief in your responses.`
+        content: `You are ${personality.name}. ${personality.instruction} Focus on the situation and provide thoughtful insights. Ask follow up questions if you can't fully agree with the user's points. Otherwise, try to maintain your position. Be conversational, yet brief in your responses. Limit yourself to 1 or 2 sentences.`
       };
       
       const initialUserMessage = {

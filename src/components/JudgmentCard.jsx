@@ -11,14 +11,14 @@ export function JudgmentCard({ judgment, onChatClick, activeChat, apiKey }) {
         <div className="personality">
           {personality}
         </div>
-        <button 
-          onClick={() => onChatClick(judgment)} 
-          className={`chat-button ${isActive ? 'active' : ''}`}
-        >
-          {isActive ? 'Close Chat' : 'Chat'}
-        </button>
       </div>
-      <div className="response">{response}</div>
+      <div className="response">{response.replace(/^Verdict:\s*/, '')}</div>
+      <button 
+        onClick={() => onChatClick(judgment)} 
+        className={`chat-button ${isActive ? 'active' : ''}`}
+      >
+        {isActive ? 'Close Chat' : 'Chat'}
+      </button>
       {isActive && (
         <Chat
           apiKey={apiKey}

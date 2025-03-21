@@ -1,17 +1,29 @@
 export const extractVerdict = (response) => {
-  const regex = /^Verdict:\s*(YTA|NTA|ESH|NAH)/i;
-  const match = response.match(regex);
-  if (match) return match[1].toUpperCase();
+  // First check for explicit verdict
+  const verdictRegex = /^Verdict:\s*(YTA|NTA|ESH|NAH)/i;
+  const verdictMatch = response.match(verdictRegex);
+  if (verdictMatch) return verdictMatch[1].toUpperCase();
 
+  // Look for explicit "not the asshole" statements
+  const notAsshole = /you('re| are) not the asshole/i;
+  if (notAsshole.test(response)) return 'NTA';
+
+  // Look for explicit "you're the asshole" statements
+  const isAsshole = /you('re| are) the asshole/i;
+  if (isAsshole.test(response)) return 'YTA';
+
+  // Check for abbreviated forms only if no explicit statements were found
   const keywords = {
-    YTA: /YTA|You're the Asshole/i,
-    NTA: /NTA|Not the Asshole/i,
-    ESH: /ESH|Everyone Sucks Here/i,
-    NAH: /NAH|No Assholes Here/i,
+    YTA: /\bYTA\b/i,
+    NTA: /\bNTA\b/i,
+    ESH: /\bESH\b|everyone sucks here/i,
+    NAH: /\bNAH\b|no assholes here/i,
   };
+  
   for (const [verdict, pattern] of Object.entries(keywords)) {
     if (pattern.test(response)) return verdict;
   }
+  
   return 'Undecided';
 };
 
