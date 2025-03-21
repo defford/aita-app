@@ -9,7 +9,7 @@ import './App.css';
 
 function App() {
   const [apiKey, setApiKey] = useState('');
-  const [story, setStory] = useState('I forgot to buy chips for a party');
+  const [story, setStory] = useState('');
   const [judgments, setJudgments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
